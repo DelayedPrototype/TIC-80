@@ -30,10 +30,6 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 2.6
-
       - name: Build
         run: |
           cd build/android
