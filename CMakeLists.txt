@@ -397,39 +397,24 @@ target_include_directories(squirrel PRIVATE ${SQUIRREL_DIR}/squirrel)
 target_include_directories(squirrel PRIVATE ${SQUIRREL_DIR}/sqstdlib)
 
 ################################
-# PocketPy (Python)
+# pocketpy (Python)
 ################################
 
-set(POCKETPY_DIR ${THIRDPARTY_DIR}/pocketpy)
+add_subdirectory(${THIRDPARTY_DIR}/pocketpy)
+target_compile_definitions(pocketpy PRIVATE PK_ENABLE_OS=0)
+include_directories(${THIRDPARTY_DIR}/pocketpy/include)
 
-if (${CMAKE_VERSION} VERSION_LESS "3.12.0") 
-    set(Python3_EXECUTABLE "python3")
-else()
-    find_package(Python3 COMPONENTS Interpreter)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(pocketpy PRIVATE -Wno-psabi)
 endif()
 
-add_custom_command(
-    OUTPUT ${POCKETPY_DIR}/src/_generated.h
-    COMMAND ${Python3_EXECUTABLE} preprocess.py
-    WORKING_DIRECTORY ${POCKETPY_DIR}
-    DEPENDS ${POCKETPY_DIR}/preprocess.py
-)
+# alias pocketpy to python for next steps
+set_target_properties(pocketpy PROPERTIES OUTPUT_NAME python)
+add_library(python ALIAS pocketpy)
 
-add_library(python STATIC
-    ${POCKETPY_DIR}/src/_generated.h
-    ${POCKETPY_DIR}/c_bindings/pocketpy_c.cpp
-)
-
-set_target_properties(python PROPERTIES LINKER_LANGUAGE CXX)
-target_compile_definitions(python PRIVATE PK_ENABLE_OS=0)
-target_include_directories(python 
-    PRIVATE ${POCKETPY_DIR}/src 
-    PUBLIC ${POCKETPY_DIR}/c_bindings)
-
-if (${CMAKE_VERSION} VERSION_LESS "3.8.0") 
-    set_target_properties(python PROPERTIES COMPILE_FLAGS "--std=c++17")
-else()
-    target_compile_features(python PRIVATE cxx_std_17)
+if(EMSCRIPTEN)
+    # exceptions must be enabled for emscripten
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fexceptions")
 endif()
 
 ################################
@@ -1208,7 +1193,7 @@ if(BUILD_SDL)
     endif()
 
     if(EMSCRIPTEN)
-        set_target_properties(tic80 PROPERTIES LINK_FLAGS "-s WASM=1 -s USE_SDL=2 -s ALLOW_MEMORY_GROWTH=1 -s FETCH=1 -s EXPORT_ES6=1 -s MODULARIZE=1  -s ENVIRONMENT=web -s EXPORT_NAME=createModule -s EXPORTED_RUNTIME_METHODS=['ENV'] -lidbfs.js")
+        set_target_properties(tic80 PROPERTIES LINK_FLAGS "-s WASM=1 -s USE_SDL=2 -s ALLOW_MEMORY_GROWTH=1 -s FETCH=1 --pre-js ${CMAKE_SOURCE_DIR}/build/html/prejs.js -lidbfs.js")
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -s USE_SDL=2")
 
         if(CMAKE_BUILD_TYPE STREQUAL "Debug")
