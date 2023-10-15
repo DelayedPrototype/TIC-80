@@ -2669,16 +2669,16 @@ static void onAddCommand(Console* console)
             }
             else
             {
-                var filePtr = Module._malloc(filename.length + 1);
+                var filePtr = _malloc(filename.length + 1);
                 stringToUTF8(filename, filePtr, filename.length + 1);
 
-                var dataPtr = Module._malloc(rom.length);
+                var dataPtr = _malloc(rom.length);
                 writeArrayToMemory(rom, dataPtr);
 
                 dynCall('viiii', $0, [$1, filePtr, dataPtr, rom.length]);
 
-                Module._free(filePtr);
-                Module._free(dataPtr);
+                _free(filePtr);
+                _free(dataPtr);
             }
         });
     }, onAddFile, console);
@@ -4089,7 +4089,7 @@ static void processKeyboard(Console* console)
                 if(console->input.pos > len)
                     console->input.pos = len;
             }
-            else if(keyWasPressed(console->studio, tic_key_return))      processConsoleCommand(console);
+            else if(enterWasPressed(console->studio))                            processConsoleCommand(console);
             else if(keyWasPressed(console->studio, tic_key_backspace))   processConsoleBackspace(console);
             else if(keyWasPressed(console->studio, tic_key_delete))      processConsoleDel(console);
             else if(keyWasPressed(console->studio, tic_key_home))        processConsoleHome(console);
