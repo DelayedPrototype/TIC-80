@@ -219,8 +219,10 @@ static lua_State* netLuaInit(u8* buffer, s32 size)
         if(lua)
         {
             if(luaL_loadstring(lua, script) == LUA_OK && lua_pcall(lua, 0, LUA_MULTRET, 0) == LUA_OK)
+            {
+                free(script);
                 return lua;
-
+            }
             else lua_close(lua);
         }
 
@@ -805,6 +807,7 @@ void tic_fs_hashload(tic_fs* fs, const char* name, const char* hash, fs_load_cal
         if (buffer)
         {
             callback(buffer, size, data);
+            free(buffer);
             return;
         }
     }

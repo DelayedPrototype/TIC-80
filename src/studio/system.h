@@ -99,6 +99,7 @@ typedef struct
             u8 cursor;
             bool shadow;
             bool altFont;
+            bool altCaret;
             bool matchDelimiters;
             bool autoDelimiters;
 
@@ -118,6 +119,7 @@ typedef struct
     bool checkNewVersion;
     bool cli;
     bool soft;
+    bool trim;
 
     struct StudioOptions
     {
@@ -129,6 +131,7 @@ typedef struct
         bool vsync;
         bool integerScale;
         s32 volume;
+        bool autosave;
         tic_mapping mapping;
 #if defined(BUILD_EDITORS)
         enum KeybindMode keybindMode;

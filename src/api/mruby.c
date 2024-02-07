@@ -23,8 +23,6 @@
 
 #include "core/core.h"
 
-#if defined(TIC_BUILD_WITH_MRUBY)
-
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -900,7 +898,7 @@ static mrb_value mrb_trace(mrb_state *mrb, mrb_value self)
 {
     mrb_value text_obj;
     mrb_int color = TIC_DEFAULT_COLOR;
-    mrb_get_args(mrb, "S|i", &text_obj, &color);
+    mrb_get_args(mrb, "o|i", &text_obj, &color);
 
     tic_core* machine = getMRubyMachine(mrb);
 
@@ -1053,10 +1051,11 @@ static bool initMRuby(tic_mem* tic, const char* code)
 static void evalMRuby(tic_mem* tic, const char* code) {
     tic_core* machine = (tic_core*)tic;
 
-    mrb_state* mrb = ((mrbVm*)machine->currentVM)->mrb = mrb_open();
-
-    if (!mrb)
+    mrbVm* vm=(mrbVm*)machine->currentVM;
+    if(!vm || !vm->mrb)
         return;
+
+    mrb_state* mrb = vm->mrb;
 
     if (((mrbVm*)machine->currentVM)->mrb_cxt)
     {
@@ -1064,6 +1063,7 @@ static void evalMRuby(tic_mem* tic, const char* code) {
     }
 
     mrbc_context* mrb_cxt = ((mrbVm*)machine->currentVM)->mrb_cxt = mrbc_context_new(mrb);
+    mrbc_filename(mrb, mrb_cxt, "eval");
     mrb_load_string_cxt(mrb, code, mrb_cxt);
     catcherr(machine);
 }
@@ -1249,5 +1249,3 @@ const tic_script_config MRubySyntaxConfig =
     .keywords           = MRubyKeywords,
     .keywordsCount      = COUNT_OF(MRubyKeywords),
 };
-
-#endif /* defined(TIC_BUILD_WITH_MRUBY) */

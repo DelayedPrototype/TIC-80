@@ -1,7 +1,5 @@
 #include "core/core.h"
 
-#if defined(TIC_BUILD_WITH_PYTHON)
-
 #include "pocketpy_c.h"
 #include <stdio.h>
 #include <string.h>
@@ -88,7 +86,6 @@ static int prepare_colorindex(pkpy_vm* vm, int index, u8 * buffer)
         return list_len;
     }
 }
-
 
 static int py_trace(pkpy_vm* vm) 
 {
@@ -683,12 +680,12 @@ static int py_pix(pkpy_vm* vm) {
     int y;
     int color = -1;
 
-
     pkpy_to_int(vm, 0, &x);
     pkpy_to_int(vm, 1, &y);
-    if (pkpy_is_int(vm, 2))
-        pkpy_to_int(vm, 2, &color);
+    if(!pkpy_is_none(vm, 2)) pkpy_to_int(vm, 2, &color);
+
     get_core(vm, (tic_core**) &tic);
+
     if(pkpy_check_error(vm)) 
         return 0;
 
@@ -810,7 +807,6 @@ static int py_print(pkpy_vm* vm) {
     int color;
     bool fixed;
     int scale;
-    bool small_;
     bool alt;
 
     pkpy_dup(vm, 0);
@@ -823,8 +819,7 @@ static int py_print(pkpy_vm* vm) {
     pkpy_to_int(vm, 3, &color);
     pkpy_to_bool(vm, 4, &fixed);
     pkpy_to_int(vm, 5, &scale);
-    pkpy_to_bool(vm, 6, &small_);
-    pkpy_to_bool(vm, 7, &alt);
+    pkpy_to_bool(vm, 6, &alt);
     get_core(vm, (tic_core**) &tic);
     if(pkpy_check_error(vm)) {
         return 0;
@@ -1021,8 +1016,8 @@ static int py_time(pkpy_vm* vm)
     if(pkpy_check_error(vm))
         return 0;
 
-    int time = tic_api_time(tic);
-    pkpy_push_int(vm, time);
+    double time = tic_api_time(tic);
+    pkpy_push_float(vm, time);
     return 1;
 }
 
@@ -1257,7 +1252,7 @@ static bool setup_c_bindings(pkpy_vm* vm) {
     pkpy_push_function(vm, "poke4(addr: int, value: int)", py_poke4);
     pkpy_setglobal_2(vm, "poke4");
 
-    pkpy_push_function(vm, "print(text, x=0, y=0, color=15, fixed=False, scale=1, smallfont=False, alt=False)", py_print);
+    pkpy_push_function(vm, "print(text, x=0, y=0, color=15, fixed=False, scale=1, alt=False)", py_print);
     pkpy_setglobal_2(vm, "print");
 
     pkpy_push_function(vm, "rect(x: int, y: int, w: int, h: int, color: int)", py_rect);
@@ -1573,5 +1568,3 @@ const tic_script_config PythonSyntaxConfig =
     .keywords           = PythonKeywords,
     .keywordsCount      = COUNT_OF(PythonKeywords),
 };
-
-#endif/* defined(TIC_BUILD_WITH_PYTHON) */

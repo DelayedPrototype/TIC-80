@@ -21,12 +21,9 @@
 // SOFTWARE.
 
 #include "core/core.h"
-#if defined(TIC_BUILD_WITH_WASM)
 
 #define dbg(...) printf(__VA_ARGS__)
 //define dbg(...)
-
-
 
 #include "tools.h"
 
@@ -576,7 +573,7 @@ m3ApiRawFunction(wasmtic_pmem)
 
     m3ApiGetArg      (int32_t, address)
     m3ApiGetArg      (int64_t, value)
-    bool writeToStorage;
+    bool writeToStorage = true;
 
     tic_mem* tic = (tic_mem*)getWasmCore(runtime);
 
@@ -987,7 +984,7 @@ M3Result linkTicAPI(IM3Module module)
     _   (SuppressLookupFailure (m3_LinkRawFunction (module, "env", "peek4",   "i(i)",          &wasmtic_peek4)));
     _   (SuppressLookupFailure (m3_LinkRawFunction (module, "env", "peek2",   "i(i)",          &wasmtic_peek2)));
     _   (SuppressLookupFailure (m3_LinkRawFunction (module, "env", "peek1",   "i(i)",          &wasmtic_peek1)));
-    _   (SuppressLookupFailure (m3_LinkRawFunction (module, "env", "pmem",    "i(ii)",         &wasmtic_pmem)));
+    _   (SuppressLookupFailure (m3_LinkRawFunction (module, "env", "pmem",    "i(iI)",         &wasmtic_pmem)));
     _   (SuppressLookupFailure (m3_LinkRawFunction (module, "env", "poke",    "v(iii)",        &wasmtic_poke)));
     _   (SuppressLookupFailure (m3_LinkRawFunction (module, "env", "poke4",   "v(ii)",         &wasmtic_poke4)));
     _   (SuppressLookupFailure (m3_LinkRawFunction (module, "env", "poke2",   "v(ii)",         &wasmtic_poke2)));
@@ -1019,7 +1016,7 @@ void deinitWasmRuntime( IM3Runtime runtime )
         return;
     }
     IM3Environment env = runtime -> environment;
-    printf("deiniting env %d\n", env);
+    printf("deiniting env %p\n", env);
 
     tic_core* tic = getWasmCore(runtime);
     m3_FreeRuntime (runtime);
@@ -1069,7 +1066,7 @@ static bool initWasm(tic_mem* tic, const char* code)
 {
     // closeWasm(tic);
     tic_core* core = (tic_core*)tic;
-    dbg("Initializing WASM3 runtime %d\n", core);
+    dbg("Initializing WASM3 runtime %p\n", core);
 
     IM3Environment env = m3_NewEnvironment ();
     if(!env)
@@ -1318,10 +1315,3 @@ const tic_script_config* get_wasm_script_config()
 {
     return &WasmSyntaxConfig;
 }
-
-#else
-
-// ??
-s32 wasm_timeout_check(void* udata){return 0;}
-
-#endif /* defined(TIC_BUILD_WITH_WASM) */
